@@ -13,7 +13,7 @@ Client::Client(QObject* parent):QObject(parent)
 	m_functions.insert(MessageIdType::Restart, std::bind(&Client::restart, this, _1));
 	m_functions.insert(MessageIdType::Update, std::bind(&Client::update, this, _1));
 
-	// do blew lines in process data function
+    // do below lines in process data function
 	QByteArray data;
 	Message message= deserialize(data);
 	m_functions[message.id](message);
@@ -36,7 +36,7 @@ void Client::write(QByteArray data)
 
 Message Client::deserialize(QByteArray rawaData)
 {
-	//in example for test I make a PowerOn Message Id type and return always.
+    //In example for test I make a PowerOn Message Id type and return always it.
 	Message message;
 	message.address = 0;
 	message.id = MessageIdType::Update;

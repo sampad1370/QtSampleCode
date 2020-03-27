@@ -14,7 +14,7 @@ struct Message
 	MessageIdType id;
 	uint32_t number;
 	uint32_t size;
-	//and so on...I Use this to fix size of Message structure.
+    //and so on...I use this to fixed size of message structure.
 };
 
 class Client : public QObject
