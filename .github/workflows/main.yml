@@ -74,7 +74,7 @@ jobs:
         run: qmake CONFIG+=debug ../clone-git-source
 
       - name: (9) Build
-        run: make
+        run: nmake
         
       - name: (10) Zip build
         working-directory: ${{ runner.temp }}
