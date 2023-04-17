@@ -56,24 +56,27 @@ jobs:
           extra: '--external 7z'
           
       - name: (4) List files in Qt
-        run: find ${{env.Qt5_Dir}}
+        run: dir ${{env.Qt5_Dir}}
+        
+      - name: (5) List files in source of project
+        run: dir '${{ github.workspace }}/clone-git-source'
 
-      - name: (5) Make build directory
+      - name: (6) Make build directory
         run: mkdir '${{ github.workspace }}/build-qt'
         
-      - name: (6) Run QMake
+      - name: (7) Run QMake
         working-directory: '${{ github.workspace }}/build-qt'
         run: qmake CONFIG+=debug ../clone-git-source
 
-      - name: (7) Build
+      - name: (8) Build
         run: make
         
-      - name: (8) Zip build
+      - name: (9) Zip build
         working-directory: ${{ runner.temp }}
         run:  |
               7z a qt-project-build.zip ${{ github.workspace }}/build-qt/* -r
               
-      - name: (9) Save build artifact
+      - name: (10) Save build artifact
         uses: actions/upload-artifact@master
         with:
           name: ${{ env.ARTIFACT }}
