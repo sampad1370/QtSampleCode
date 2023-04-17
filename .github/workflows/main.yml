@@ -64,19 +64,24 @@ jobs:
       - name: (6) Make build directory
         run: mkdir '${{ github.workspace }}/build-qt'
         
-      - name: (7) Run QMake
+      - name: (7) Set up Visual Studio shell
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
+          
+      - name: (8) Run QMake
         working-directory: '${{ github.workspace }}/build-qt'
         run: qmake CONFIG+=debug ../clone-git-source
 
-      - name: (8) Build
+      - name: (9) Build
         run: make
         
-      - name: (9) Zip build
+      - name: (10) Zip build
         working-directory: ${{ runner.temp }}
         run:  |
               7z a qt-project-build.zip ${{ github.workspace }}/build-qt/* -r
               
-      - name: (10) Save build artifact
+      - name: (11) Save build artifact
         uses: actions/upload-artifact@master
         with:
           name: ${{ env.ARTIFACT }}
