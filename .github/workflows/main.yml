@@ -1,0 +1,89 @@
+## References for this build commands:
+## https://medium.com/@TomRvr/continuous-integration-for-a-qt-project-with-github-b19a33b39980
+## https://stackoverflow.com/questions/69108420/build-qt-cmake-based-project-in-github-actions
+
+name: Test Action and build Qt
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+env:
+  SOURCE_DIR:   ${{ github.workspace }}
+  QT_VERSION:   5.15.2
+  ARTIFACT:     qt-project-build.zip
+  
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 600
+    strategy:
+      fail-fast: false
+    steps:
+      - name: (1) Checkout repo
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          path: clone-git-source
+          
+      - name: (2) Get all tags for correct version determination
+        working-directory:  '${{ github.workspace }}/clone-git-source'
+        run: |
+          git fetch --all --tags -f
+    
+      - name: (3) Install Qt
+        uses: jurplel/install-qt-action@v3.1.0
+        with:
+          version: '5.15.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          dir: '${{ github.workspace }}/temp/Qt'
+          install-deps: 'true'
+          modules: 'qtcharts'
+          #linux version
+          #archives: 'qtbase qtsvg icu qtdeclarative qtgraphicaleffects qtimageformats qtmultimedia qtquickcontrols qtquickcontrols2 qttools qttranslations qtx11extras qtxmlpatterns'
+          archives: 'd3dcompiler_47 opengl32sw qtbase qtdeclarative qtgraphicaleffects qtimageformats qtmultimedia qtquickcontrols qtquickcontrols2 qtsvg qttools qttranslations qtwinextras qtxmlpatterns'
+          cache: 'true'
+          cache-key-prefix: 'install-qt-action'
+          setup-python: 'true'
+          tools: 'tools_ifw tools_qtcreator,qt.tools.qtcreator'
+          set-env: 'true'
+          tools-only: 'false'
+          aqtversion: '==2.1.*'
+          py7zrversion: '==0.19.*'
+          extra: '--external 7z'
+          
+      - name: (4) List files in Qt
+        run: dir ${{env.Qt5_Dir}}
+        
+      - name: (5) List files in source of project
+        run: dir '${{ github.workspace }}/clone-git-source'
+
+      - name: (6) Make build directory
+        run: mkdir '${{ github.workspace }}/build-qt'
+        
+      - name: (7) Set up Visual Studio shell
+        uses: egor-tensin/vs-shell@v2
+        with:
+          arch: x64
+          
+      - name: (8) Run QMake
+        working-directory: '${{ github.workspace }}/build-qt'
+        run: qmake CONFIG+=debug ../clone-git-source
+
+      - name: (9) Build
+        working-directory: '${{ github.workspace }}/build-qt'
+        run: nmake
+        
+      - name: (10) Zip build
+        working-directory: ${{ runner.temp }}
+        run:  |
+              7z a qt-project-build.zip ${{ github.workspace }}/build-qt/* -r
+              
+      - name: (11) Save build artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ env.ARTIFACT }}
+          path: ${{ runner.temp }}\${{ env.ARTIFACT }}
